@@ -56,12 +56,12 @@ func (s *Storage) PutOrUpdateUser(userId uint64, friends []uint64, conn io.Write
 	s.Unlock()
 }
 
-// SetUserOffline установить статус offline
-func (s *Storage) SetUserOffline(userId uint64) (isOk bool) {
+// SetUserOnlineStatus установить статус
+func (s *Storage) SetUserOnlineStatus(userId uint64, status bool) (isOk bool) {
 	s.Lock()
 	defer s.Unlock()
 	if val, ok := s.users[userId]; ok {
-		val.OnlineStatus = false
+		val.OnlineStatus = status
 		s.users[userId] = val
 		return true
 	}
@@ -74,3 +74,11 @@ func (s *Storage) RemoveUser(userId uint64) {
 	delete(s.users, userId)
 	s.Unlock()
 }
+
+// Followers список юзеров для которых userId является другом
+func (s *Storage) Followers(userId uint64) {
+	s.Lock()
+	// TODO
+	s.Unlock()
+}
+

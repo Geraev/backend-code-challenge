@@ -4,6 +4,6 @@ import "io"
 
 type IStorage interface {
 	PutOrUpdateUser(userId uint64, friends []uint64, conn io.Writer)
-	SetUserOffline(userId uint64) (isOk bool)
+	SetUserOnlineStatus(userId uint64, status bool) (isOk bool)
 	RemoveUser(userId uint64)
 }
