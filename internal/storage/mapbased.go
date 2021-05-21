@@ -13,7 +13,7 @@ type Storage struct {
 type User struct {
 	ID           uint64 `json:"user_id"`
 	OnlineStatus bool   `json:"online"`
-	Friends      []uint64
+	Friends      map[uint64]struct{}
 	Connection   io.Writer
 }
 
@@ -25,47 +25,54 @@ func NewStorage() *Storage {
 	return s
 }
 
-func NewTestStorage() *Storage {
-	return &Storage{
-		RWMutex: new(sync.RWMutex),
-		users: map[uint64]User{
-			1: {
-				ID:           1,
-				OnlineStatus: true,
-				Friends:      []uint64{1, 2, 3},
-				Connection:   nil,
-			},
-		},
-	}
-}
-
-// PutOrUpdateUser добавление либо обновление записи User
-func (s *Storage) PutOrUpdateUser(userId uint64, friends []uint64, conn io.Writer) {
+// AddUser добавление либо обновление записи User
+func (s *Storage) AddUser(userId uint64, friends []uint64, conn io.Writer) {
 	s.Lock()
-	if val, ok := s.users[userId]; ok {
-		val.Friends = friends
-		s.users[userId] = val
-	} else {
-		s.users[userId] = User{
-			ID:           userId,
-			OnlineStatus: true,
-			Friends:      friends,
-			Connection:   conn,
-		}
+	frndsMap := make(map[uint64]struct{})
+	for _, item := range friends {
+		frndsMap[item] = struct{}{}
 	}
+
+	s.users[userId] = User{
+		ID:           userId,
+		OnlineStatus: true,
+		Friends:      frndsMap,
+		Connection:   conn,
+	}
+
 	s.Unlock()
 }
 
-// SetUserOnlineStatus установить статус
-func (s *Storage) SetUserOnlineStatus(userId uint64, status bool) (isOk bool) {
+// SetUserOffline установить статус
+func (s *Storage) SetUserOffline(userId uint64) (isOk bool) {
 	s.Lock()
 	defer s.Unlock()
 	if val, ok := s.users[userId]; ok {
-		val.OnlineStatus = status
+		val.OnlineStatus = false
 		s.users[userId] = val
 		return true
 	}
 	return false
+}
+
+// GetUserStatus получить статус
+func (s *Storage) GetUserStatus(userId uint64) (onlineStatus bool) {
+	s.RLock()
+	if val, ok := s.users[userId]; ok {
+		onlineStatus = val.OnlineStatus
+	}
+	s.RUnlock()
+	return
+}
+
+// GetUserConn получить connection пользователя
+func (s *Storage) GetUserConn(userId uint64) (conn io.Writer, ok bool) {
+	s.RLock()
+	defer s.RUnlock()
+	if val, ok := s.users[userId]; ok {
+		return val.Connection, true
+	}
+	return nil, false
 }
 
 // RemoveUser удаление пользователя
@@ -76,9 +83,13 @@ func (s *Storage) RemoveUser(userId uint64) {
 }
 
 // Followers список юзеров для которых userId является другом
-func (s *Storage) Followers(userId uint64) {
-	s.Lock()
-	// TODO
-	s.Unlock()
+func (s *Storage) Followers(userId uint64) (followers []uint64) {
+	s.RLock()
+	for _, v := range s.users {
+		if _, ok := v.Friends[userId]; ok {
+			followers = append(followers, v.ID)
+		}
+	}
+	s.RUnlock()
+	return followers
 }
-
