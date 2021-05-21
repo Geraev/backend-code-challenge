@@ -68,6 +68,10 @@ func (s *Friends) handleConnection(conn net.Conn) {
 			break
 		}
 
+		if strings.TrimSpace(message) == "" {
+			continue
+		}
+
 		var CurrentUser domain.User
 		err := json.Unmarshal([]byte(message), &CurrentUser)
 
