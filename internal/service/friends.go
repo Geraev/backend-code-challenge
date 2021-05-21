@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net"
 	"strings"
@@ -12,9 +13,13 @@ import (
 	"github.com/geraev/backend-code-challenge/internal/repository"
 )
 
+type Listener interface {
+	net.Listener
+}
+
 type Friends struct {
 	storage  repository.IStorage
-	listener net.Listener
+	listener Listener
 }
 
 type UserStatus struct {
@@ -53,7 +58,7 @@ func (s *Friends) broadcastOnlineStatus(userId uint64, status bool) {
 	}
 }
 
-func (s *Friends) handleConnection(conn net.Conn) {
+func (s *Friends) handleConnection(conn io.ReadWriteCloser) {
 	defer func() {
 		fmt.Println("Connection closed")
 		conn.Close()
