@@ -4,31 +4,32 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
-	"github.com/geraev/backend-code-challenge/internal/domain"
-	"github.com/geraev/backend-code-challenge/internal/repository"
 	"log"
 	"net"
 	"strings"
+
+	"github.com/geraev/backend-code-challenge/internal/domain"
+	"github.com/geraev/backend-code-challenge/internal/repository"
 )
 
 type Friends struct {
-	storage repository.IStorage
+	storage  repository.IStorage
 	listener net.Listener
 }
 
 type UserStatus struct {
-	ID uint64 `json:"user_id"`
-	Status bool `json:"online"`
+	ID     uint64 `json:"user_id"`
+	Status bool   `json:"online"`
 }
 
 func NewFriends(storage repository.IStorage, listener net.Listener) Friends {
 	return Friends{
-		storage: storage,
+		storage:  storage,
 		listener: listener,
 	}
 }
 
-func (s *Friends) Start()  {
+func (s *Friends) Start() {
 	for {
 		conn, err := s.listener.Accept()
 		if err != nil {
