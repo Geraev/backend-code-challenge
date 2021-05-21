@@ -8,12 +8,8 @@ import (
 )
 
 func Run() {
-	//listener, err := net.Listen("tcp", "127.0.0.1:8081")
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
 
-	listener, err := protocol.NewTCP("127.0.0.1", "8081")
+	listener, err := protocol.NewTCP("", "3331")
 	if err != nil {
 		log.Fatal(err)
 	}
