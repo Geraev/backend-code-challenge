@@ -41,6 +41,11 @@ func (s *Friends) Start() {
 			log.Fatal(err)
 		}
 
+		_, err2 := fmt.Fprintln(conn, "Connection established")
+		if err2 != nil {
+			log.Fatal(err2)
+		}
+
 		go s.handleConnection(conn)
 	}
 }
@@ -60,7 +65,7 @@ func (s *Friends) broadcastOnlineStatus(userId uint64, status bool) {
 
 func (s *Friends) handleConnection(conn io.ReadWriteCloser) {
 	defer func() {
-		fmt.Println("Connection closed")
+		log.Println("Connection closed")
 		conn.Close()
 	}()
 
@@ -82,11 +87,12 @@ func (s *Friends) handleConnection(conn io.ReadWriteCloser) {
 
 		if err != nil {
 			log.Println("incorrect json:", err)
+			fmt.Fprintln(conn, "> incorrect json", err)
 			continue
 		}
 
 		if status := s.storage.GetUserStatus(CurrentUser.ID); status {
-			fmt.Fprintf(conn, "User %d already online", CurrentUser.ID)
+			fmt.Fprintf(conn, "> User %d already online", CurrentUser.ID)
 			continue
 		}
 
@@ -101,6 +107,6 @@ func (s *Friends) handleConnection(conn io.ReadWriteCloser) {
 	}()
 
 	if err := scanner.Err(); err != nil {
-		fmt.Println("error:", err)
+		log.Println("error:", err)
 	}
 }

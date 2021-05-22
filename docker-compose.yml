@@ -1,0 +1,7 @@
+version: "3"
+services:
+  backend-code-challenge:
+    build: ./
+    image: backend-code-challenge
+    ports:
+      - "8031:3331"
